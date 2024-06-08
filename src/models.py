@@ -11,7 +11,7 @@ class User(Base):
     username = Column(String)
     email = Column(String, unique=True)
     hashed_password = Column(String)
-
+    
     recipes = relationship("Recipe", back_populates="creator")
 
 
