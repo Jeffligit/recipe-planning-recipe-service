@@ -1,18 +1,18 @@
 from pydantic import BaseModel
 
-
 class RecipeBase(BaseModel):
     title: str
     description: str | None = None
-
+    prep_time: int | None = None
+    cook_time: int | None = None
 
 class RecipeCreate(RecipeBase):
     pass
 
-
 class Recipe(RecipeBase):
     id: int
-    owner_id: int
+    author_id: int
+    rating: float = 0.0
 
     class Config:
         orm_mode = True
@@ -39,3 +39,4 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: str | None = None
     user_id: int | None = None
+
