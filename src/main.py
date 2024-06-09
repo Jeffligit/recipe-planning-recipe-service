@@ -6,8 +6,8 @@ from . import models
 from .database import SessionLocal, engine
 from typing import Annotated
 from .schemas import User, UserCreate, TokenData, Token
-from .auth.userAuth import create_access_token, decode_access_token, verify_password
-from .crud import create_user, get_user_by_username, get_user_by_email, get_user
+from .auth.user_auth import create_access_token, decode_access_token, verify_password
+from .user.crud import create_user, get_user_by_username, get_user_by_email, get_user
  
 
 models.Base.metadata.create_all(bind=engine)

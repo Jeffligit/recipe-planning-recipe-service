@@ -1,7 +1,7 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
-
 from .database import Base
+
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 
 class User(Base):
@@ -11,7 +11,7 @@ class User(Base):
     username = Column(String)
     email = Column(String, unique=True)
     hashed_password = Column(String)
-    
+
     recipes = relationship("Recipe", back_populates="creator")
 
 
