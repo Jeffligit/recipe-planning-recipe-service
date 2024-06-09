@@ -3,8 +3,9 @@ from typing import Annotated
 from .auth.user_auth import create_access_token, decode_access_token, verify_password
 from .database import SessionLocal, engine
 from .models import Base
-from .schemas import User, UserCreate, TokenData, Token
+from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token
 from .user.crud import create_user, get_user_by_username, get_user_by_email, get_user
+from .recipe.crud import create_recipe
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -27,12 +28,14 @@ def get_db():
 def root():
     return "Hello World"
 
+
 @app.get('/health')
 def health():
     '''
     Checks if the service is healthy
     '''
     return ""
+
 
 def verify_jwt(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
     '''
@@ -66,25 +69,26 @@ def verify_jwt(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
     except InvalidTokenError:
         raise credentials_exception
     
-@app.get('/user/', response_model=User)
-def read_user(token_data: Annotated[TokenData, Depends(verify_jwt)], db: Session = Depends(get_db)):
-    '''
-    Retrieves user using information provided in the JWT token
 
-    Parameters: 
-        token_data: TokenData object created from verifying the jwt token. Has a dependency function verify_wt
+@app.post('/signup', response_model=User)
+def signup(user: UserCreate, db: Session = Depends(get_db)):
+    '''
+    Creates a user in the database
+
+     Parameters: 
+        user: UserCreate object in the response body
         db: database session
 
     Returns: response_model=User json of User schema
     '''
-    user = get_user(db, user_id=token_data.user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user
+    existing_user = get_user_by_email(db, user.email)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    existing_user = get_user_by_username(db, user.username)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username is in use")
+
+    return create_user(db, user)
 
 
 @app.post('/token')
@@ -109,23 +113,42 @@ def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depen
 
     return Token(access_token=access_token, token_type="bearer")
 
-
-@app.post('/signup', response_model=User)
-def signup(user: UserCreate, db: Session = Depends(get_db)):
+    
+@app.get('/user', response_model=User)
+def read_user(token_data: Annotated[TokenData, Depends(verify_jwt)], db: Session = Depends(get_db)):
     '''
-    Creates a user in the database
+    Retrieves user using information provided in the JWT token
 
-     Parameters: 
-        user: UserCreate object in the response body
+    Parameters: 
+        token_data: TokenData object created from verifying the jwt token. Has a dependency function verify_wt
         db: database session
 
     Returns: response_model=User json of User schema
     '''
-    existing_user = get_user_by_email(db, user.email)
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    existing_user = get_user_by_username(db, user.username)
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username is in use")
+    user = get_user(db, user_id=token_data.user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user
 
-    return create_user(db, user)
+
+@app.post('/recipe', response_model=Recipe)
+def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: RecipeCreate, db: Annotated[Session, Depends(get_db)]):
+    '''
+    Add Recipe to DB
+
+    Parameters:
+        token_data: TokenData object created from verifying the jwt token. We want to use the 'user_id' found here.
+        recipe: RecipeCreate object. Contains information needed for creating a recipe in the database.
+        db: db session
+
+    Returns:
+        Recipe Object
+    '''
+
+    return create_recipe(db=db, recipe=recipe, user_id=token_data.user_id)
+
+

@@ -1,6 +1,6 @@
 from .database import Base
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship
 
 
@@ -12,7 +12,7 @@ class User(Base):
     email = Column(String, unique=True)
     hashed_password = Column(String)
 
-    recipes = relationship("Recipe", back_populates="creator")
+    recipes = relationship("Recipe", back_populates="author")
 
 
 class Recipe(Base):
@@ -21,6 +21,8 @@ class Recipe(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String, index=True)
     description = Column(String, index=True)
-    creator_id = Column(Integer, ForeignKey("users.id"))
-
-    creator = relationship("User", back_populates="recipes")
+    author_id = Column(Integer, ForeignKey("users.id"))
+    prep_time = Column(Integer)
+    cook_time = Column(Integer)
+    rating = Column(Float(2))
+    author = relationship("User", back_populates="recipes")
