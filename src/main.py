@@ -153,5 +153,16 @@ def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: Re
 
 @app.get('/recipe', response_model=Recipe)
 def read_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
+    '''
+    Get Recipe from DB by id
+
+    Parameters:
+        db: db session
+        recipe_id: id of recipe
+
+    Returns:
+        Recipe Object
+    '''
+
     return get_recipe(db, recipe_id)
 
