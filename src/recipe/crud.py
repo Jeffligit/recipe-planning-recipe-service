@@ -9,3 +9,6 @@ def create_recipe(db: Session, recipe: RecipeCreate, user_id: int):
     db.commit()
     db.refresh(db_recipe)
     return db_recipe
+
+def get_recipe(db: Session, recipe_id: int):
+    return db.query(Recipe).filter(Recipe.id == recipe_id).first()
