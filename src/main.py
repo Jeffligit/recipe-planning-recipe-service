@@ -5,7 +5,7 @@ from .database import SessionLocal, engine
 from .models import Base
 from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token
 from .user.crud import create_user, get_user_by_username, get_user_by_email, get_user
-from .recipe.crud import create_recipe
+from .recipe.crud import create_recipe, get_recipe
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -151,4 +151,7 @@ def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: Re
 
     return create_recipe(db=db, recipe=recipe, user_id=token_data.user_id)
 
+@app.get('/recipe', response_model=Recipe)
+def read_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
+    return get_recipe(db, recipe_id)
 
