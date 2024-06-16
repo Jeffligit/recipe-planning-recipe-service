@@ -4,3 +4,4 @@ psycopg2-binary == 2.9.9
 PyJWT == 2.8.0
 passlib == 1.7.4
 bcrypt == 4.1.3
+docker-composer-v2 == 0.8.8
