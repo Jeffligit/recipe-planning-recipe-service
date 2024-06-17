@@ -165,4 +165,3 @@ def read_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
     '''
 
     return get_recipe(db, recipe_id)
-
