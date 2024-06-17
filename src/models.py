@@ -26,3 +26,9 @@ class Recipe(Base):
     cook_time = Column(Integer)
     rating = Column(Float(2))
     author = relationship("User", back_populates="recipes")
+
+class Ingredient(Base):
+    __tablename__= "ingredients"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, index=True)
