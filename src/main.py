@@ -3,9 +3,10 @@ from typing import Annotated
 from .auth.user_auth import create_access_token, decode_access_token, verify_password
 from .database import SessionLocal, engine
 from .models import Base
-from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token
+from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token, Ingredient
 from .user.crud import create_user, get_user_by_username, get_user_by_email, get_user
 from .recipe.crud import create_recipe, get_recipe
+from .ingredient.crud import create_ingredient
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -166,3 +167,12 @@ def read_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
 
     return get_recipe(db, recipe_id)
 
+@app.get('/ingredient', response_model=Ingredient)
+def add_ingredient(db: Annotated[Session, Depends(get_db)], id: int, name: str):
+    '''
+    For Testing Purposes
+
+    Add Ingredient
+    '''
+
+    return create_ingredient(db, id, name)
