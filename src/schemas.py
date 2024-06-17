@@ -40,3 +40,6 @@ class TokenData(BaseModel):
     email: str | None = None
     user_id: int | None = None
 
+class Ingredient(BaseModel):
+    id: int
+    name: str
