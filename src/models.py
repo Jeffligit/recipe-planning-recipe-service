@@ -13,6 +13,7 @@ class User(Base):
     hashed_password = Column(String)
 
     recipes = relationship("Recipe", back_populates="author")
+    mealplans = relationship("MealPlan", back_populates="author")
 
 
 class Recipe(Base):
@@ -26,3 +27,13 @@ class Recipe(Base):
     cook_time = Column(Integer)
     rating = Column(Float(2))
     author = relationship("User", back_populates="recipes")
+
+class MealPlan(Base):
+    __tablename__ = "mealplans"
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String, index=True)
+    description = Column(String, index=True)
+    author_id = Column(Integer, ForeignKey("users.id"))
+    ingredients = Column(String, index=True)
+    author = relationship("User", back_populates="mealplans")

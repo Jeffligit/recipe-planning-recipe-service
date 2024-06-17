@@ -1,5 +1,16 @@
 from pydantic import BaseModel
 
+class MealPlanBase(BaseModel):
+    title: str
+    ingredients: str | None = None
+
+class MealPlanCreate(MealPlanBase):
+    pass
+
+class MealPlan(MealPlanBase):
+    id: int
+    author_id: int
+
 class RecipeBase(BaseModel):
     title: str
     description: str | None = None
