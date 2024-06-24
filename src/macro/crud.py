@@ -11,4 +11,7 @@ def create_macro(db: Session, macro: MacroCreate, recipe_id: int):
     return db_macro
 
 def get_macro_from_recipe(db: Session, recipe_id: int):
-    return db.query(Macro).filter(Macro.recipe_id == recipe_id).all()
+    return db.query(Macro).filter(Macro.recipe_id == recipe_id).first()
+
+def get_macro(db: Session, macro_id: int):
+    return db.query(Macro).filter(Macro.id == macro_id).first()

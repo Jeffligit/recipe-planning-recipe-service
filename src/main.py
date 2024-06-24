@@ -7,7 +7,7 @@ from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token, I
 from .user.crud import create_user, get_user_by_username, get_user_by_email, get_user
 from .recipe.crud import create_recipe, get_recipe
 from .ingredient.crud import create_ingredient
-from .macro.crud import create_macro
+from .macro.crud import create_macro, get_macro_from_recipe, get_macro
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -186,3 +186,20 @@ def add_macro(db: Annotated[Session, Depends(get_db)], macro: MacroCreate, recip
     Add Macro
     '''
     return create_macro(db, macro, recipe_id)
+
+@app.get('/macro', response_model=Macro)
+def read_macro(db: Annotated[Session, Depends(get_db)], macro_id: int):
+    '''
+    Get Macro from Macro ID
+    '''
+    
+    return get_macro(db, macro_id)
+
+
+@app.get('/macro/from-recipe', response_model=Macro)
+def read_macro_from_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
+    '''
+    Get Macro from Recipe ID
+    '''
+
+    return get_macro_from_recipe(db, recipe_id)
