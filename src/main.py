@@ -3,10 +3,11 @@ from typing import Annotated
 from .auth.user_auth import create_access_token, decode_access_token, verify_password
 from .database import SessionLocal, engine
 from .models import Base
-from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token, Ingredient
+from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token, Ingredient, Macro, MacroCreate
 from .user.crud import create_user, get_user_by_username, get_user_by_email, get_user
 from .recipe.crud import create_recipe, get_recipe
 from .ingredient.crud import create_ingredient
+from .macro.crud import create_macro, get_macro_from_recipe, get_macro
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -176,3 +177,29 @@ def add_ingredient(db: Annotated[Session, Depends(get_db)], id: int, name: str):
     '''
 
     return create_ingredient(db, id, name)
+
+@app.post('/macro', response_model=Macro)
+def add_macro(db: Annotated[Session, Depends(get_db)], macro: MacroCreate, recipe_id: int, token_data: Annotated[TokenData, Depends(verify_jwt)]):
+    '''
+    For Testing Purposes
+
+    Add Macro
+    '''
+    return create_macro(db, macro, recipe_id)
+
+@app.get('/macro', response_model=Macro)
+def read_macro(db: Annotated[Session, Depends(get_db)], macro_id: int):
+    '''
+    Get Macro from Macro ID
+    '''
+    
+    return get_macro(db, macro_id)
+
+
+@app.get('/macro/from-recipe', response_model=Macro)
+def read_macro_from_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
+    '''
+    Get Macro from Recipe ID
+    '''
+
+    return get_macro_from_recipe(db, recipe_id)

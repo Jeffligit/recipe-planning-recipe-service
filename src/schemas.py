@@ -43,3 +43,19 @@ class TokenData(BaseModel):
 class Ingredient(BaseModel):
     id: int
     name: str
+
+class MacroBase(BaseModel):
+    calories: int | None = None
+    protein: int | None = None
+    carbohydrates: int | None = None
+    fats: int | None = None
+
+class MacroCreate(MacroBase):
+    pass
+
+class Macro(MacroBase):
+    id: int
+    recipe_id: int
+
+    class Config:
+        orm_mode = True
