@@ -26,6 +26,7 @@ class Recipe(Base):
     cook_time = Column(Integer)
     rating = Column(Float(2))
     author = relationship("User", back_populates="recipes")
+    ingredients = relationship("Quantity", back_populates="recipe")
     macros = relationship("Macro", back_populates="recipe")
 
 class Ingredient(Base):
@@ -33,6 +34,39 @@ class Ingredient(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, index=True)
+    recipes = relationship("Quantity", back_populates="ingredient")
+
+
+'''
+Quantity Table:
+
+id: int
+recipe_id: int
+ingredient_id: int
+amount: float
+unit: str
+
+Quantity table is essentially our ManyToMany association between Recipes and Ingredients
+Many Ingredients in a Recipe
+Many Recipes for an Ingredient
+
+Since we need more columns than just recipes and ingredients, we need to use Association Object
+
+Parent --> Recipe
+Child --> Ingredient
+'''
+
+class Quantity(Base):
+    __tablename__="quantities"
+
+    recipe_id = Column(Integer, ForeignKey("recipes.id"), primary_key=True)
+    ingredient_id = Column(Integer, ForeignKey("ingredients.id"), primary_key=True)
+    amount = Column(Float)
+    unit = Column(String, index=True)
+
+    ingredient = relationship("Ingredient", back_populates="recipes")
+    recipe = relationship("Recipe", back_populates="ingredients")
+
 
 class Macro(Base):
     __tablename__="macros"
@@ -44,3 +78,4 @@ class Macro(Base):
     carbohydrates = Column(Integer)
     fats = Column(Integer)
     recipe = relationship("Recipe", back_populates="macros", uselist=False)
+
