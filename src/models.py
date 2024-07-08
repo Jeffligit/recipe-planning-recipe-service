@@ -26,16 +26,14 @@ class Recipe(Base):
     cook_time = Column(Integer)
     rating = Column(Float(2))
     author = relationship("User", back_populates="recipes")
-    
     ingredients = relationship("Quantity", back_populates="recipe")
-
+    macros = relationship("Macro", back_populates="recipe")
 
 class Ingredient(Base):
     __tablename__= "ingredients"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, index=True)
-    
     recipes = relationship("Quantity", back_populates="ingredient")
 
 
@@ -68,3 +66,16 @@ class Quantity(Base):
 
     ingredient = relationship("Ingredient", back_populates="recipes")
     recipe = relationship("Recipe", back_populates="ingredients")
+
+
+class Macro(Base):
+    __tablename__="macros"
+
+    id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"))
+    calories = Column(Integer)
+    protein = Column(Integer)
+    carbohydrates = Column(Integer)
+    fats = Column(Integer)
+    recipe = relationship("Recipe", back_populates="macros", uselist=False)
+
