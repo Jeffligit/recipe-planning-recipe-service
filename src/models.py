@@ -1,6 +1,6 @@
 from .database import Base
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Table
 from sqlalchemy.orm import relationship
 
 
@@ -28,6 +28,8 @@ class Recipe(Base):
     author = relationship("User", back_populates="recipes")
     ingredients = relationship("Quantity", back_populates="recipe")
     macros = relationship("Macro", back_populates="recipe")
+    tags = relationship("Tag", secondary=recipes_tags, back_populates="recipes")
+
 
 class Ingredient(Base):
     __tablename__= "ingredients"
@@ -79,3 +81,17 @@ class Macro(Base):
     fats = Column(Integer)
     recipe = relationship("Recipe", back_populates="macros", uselist=False)
 
+class Tag(Base):
+    __tablename__ = "tags"
+
+    id = Column(Integer, primary_key=True)
+    tag = Column(String, index=True)
+    recipes = relationship("Recipe", secondary=recipes_tags, back_populates="tags")
+
+
+recipes_tags = Table(
+    "recipes_tags", 
+    Base.metadata,
+    Column("recipe_id", Integer, ForeignKey("recipes.id")),
+    Column("tag_id", Integer, ForeignKey("tags.id"))
+    )
