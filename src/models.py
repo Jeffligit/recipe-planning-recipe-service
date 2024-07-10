@@ -15,6 +15,13 @@ class User(Base):
     recipes = relationship("Recipe", back_populates="author")
 
 
+recipes_tags = Table(
+    "recipes_tags", 
+    Base.metadata,
+    Column("recipe_id", Integer, ForeignKey("recipes.id")),
+    Column("tag_id", Integer, ForeignKey("tags.id"))
+    )
+
 class Recipe(Base):
     __tablename__ = "recipes"
 
@@ -85,13 +92,7 @@ class Tag(Base):
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True)
-    tag = Column(String, index=True)
+    name = Column(String, index=True)
     recipes = relationship("Recipe", secondary=recipes_tags, back_populates="tags")
 
 
-recipes_tags = Table(
-    "recipes_tags", 
-    Base.metadata,
-    Column("recipe_id", Integer, ForeignKey("recipes.id")),
-    Column("tag_id", Integer, ForeignKey("tags.id"))
-    )
