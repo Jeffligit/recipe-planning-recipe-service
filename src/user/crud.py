@@ -24,3 +24,9 @@ def create_user(db: Session, user: UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def edit_username(db: Session, user_id: int, new_username: str):
+    user = db.query(User).filter(User.id == user_id).first()
+    user.username = new_username
+    db.commit()
+    return user
