@@ -59,3 +59,7 @@ class Macro(MacroBase):
 
     class Config:
         orm_mode = True
+
+class Tag(BaseModel):
+    id: int
+    tag: str
