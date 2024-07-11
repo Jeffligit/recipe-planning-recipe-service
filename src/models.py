@@ -35,6 +35,7 @@ class Recipe(Base):
     author = relationship("User", back_populates="recipes")
     ingredients = relationship("Quantity", back_populates="recipe")
     macros = relationship("Macro", back_populates="recipe")
+    instructions = relationship("Instruction", back_populates="recipe")
     tags = relationship("Tag", secondary=recipes_tags, back_populates="recipes")
 
 
@@ -87,6 +88,17 @@ class Macro(Base):
     carbohydrates = Column(Integer)
     fats = Column(Integer)
     recipe = relationship("Recipe", back_populates="macros", uselist=False)
+
+
+class Instruction(Base):
+    __tablename__="instructions"
+
+    id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"))
+    step_number = Column(Integer)
+    step_description = Column(String, index=True)
+
+    recipe = relationship("Recipe", back_populates="instructions")
 
 class Tag(Base):
     __tablename__ = "tags"
