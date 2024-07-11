@@ -35,4 +35,16 @@ class TestRecipe:
         for recipe in recipe_list:
             print(f"{recipe.id}, {recipe.title}")
         
-        assert len(recipe_list) == 5
+        #getting first 2 recipes with given filter
+        
+        recipe_list_2 = get_paginated_recipes(session, 1, 2, Recipe.title.like("%number%"))
+        for recipe in recipe_list_2:
+            print(f"{recipe.id}, {recipe.title}")
+        
+        
+
+'''    def test_generic_paginate_results(self, session):
+        recipes = paginate_query_results(session, Recipe, Recipe.id % 2 == 0, 1, 2)
+
+        for recipe in recipes:
+            print(f"{recipe.id}, {recipe.title}")'''

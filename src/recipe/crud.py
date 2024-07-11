@@ -13,5 +13,9 @@ def create_recipe(db: Session, recipe: RecipeCreate, user_id: int):
 def get_recipe(db: Session, recipe_id: int):
     return db.query(Recipe).filter(Recipe.id == recipe_id).first()
 
-def get_paginated_recipes(db: Session, page: int, per_page: int):
-    return db.query(Recipe).limit(per_page).offset((page - 1) * per_page).all()
+def get_paginated_recipes(db: Session, page: int, per_page: int, filter=None):
+    query = db.query(Recipe)
+    if filter is not None:
+        query = query.filter(filter)
+    
+    return query.limit(per_page).offset((page - 1) * per_page).all()
