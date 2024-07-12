@@ -6,8 +6,11 @@ from .models import Base
 from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token, Ingredient, Macro, MacroCreate
 from .user.crud import create_user, get_user_by_username, get_user_by_email, get_user
 from .recipe.crud import create_recipe, get_recipe
-from .ingredient.crud import create_ingredient
+from .ingredient.crud import create_ingredient, ingredient_exists_by_name, get_ingredient_by_name
 from .macro.crud import create_macro, get_macro_from_recipe, get_macro
+from .quantity.crud import create_quantity
+from .instruction.crud import create_instruction
+from .tag.crud import tag_exists_by_name, create_tag, get_tag
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -136,9 +139,42 @@ def read_user(token_data: Annotated[TokenData, Depends(verify_jwt)], db: Session
         )
     return user
 
+def add_full_recipe(recipe: RecipeCreate, db: Annotated[Session, Depends(get_db)],
+               ingredients_list: list, instructions_list: list, tags_list: list):
+    recipe = create_recipe(db=db, recipe=recipe, user_id=1)
+
+    for ingredient_item in ingredients_list:
+        '''
+        if ingredient_item.name exists
+            ingredient = get_ingredient()
+        else
+            ingredient = create_ingredient()
+        
+        create_quantity(db, recipe.id, ingredient.id, ingredient_item.amount, ingredient_item.unit)
+        '''
+        if ingredient_exists_by_name(db, ingredient_item.get("name")):
+            ingredient = get_ingredient_by_name(db, ingredient_item.get("name"))
+        else:
+            ingredient = create_ingredient(db, ingredient_item.get("name"))
+        
+        create_quantity(db, recipe.id, ingredient.id, ingredient_item.get("amount"), ingredient_item.get("unit"))
+    
+    for instruction in instructions_list:
+        step = create_instruction(db, instruction.get("number"), instruction.get("description"))
+        recipe.instructions.append(step)
+
+    for tag_item in tags_list:
+        if tag_exists_by_name(db, tag_item):
+            tag = get_tag(db, tag_item)
+        else:
+            tag = create_tag(db, tag_item)
+        recipe.tags.append(tag)
+    
+    return recipe
 
 @app.post('/recipe', response_model=Recipe)
-def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: RecipeCreate, db: Annotated[Session, Depends(get_db)]):
+def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: RecipeCreate, db: Annotated[Session, Depends(get_db)],
+               ingredients_list: list, instructions_list: list, tags_list: list):
     '''
     Add Recipe to DB
 
@@ -151,7 +187,37 @@ def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: Re
         Recipe Object
     '''
 
-    return create_recipe(db=db, recipe=recipe, user_id=token_data.user_id)
+    recipe = create_recipe(db=db, recipe=recipe, user_id=token_data.user_id)
+
+    for ingredient_item in ingredients_list:
+        '''
+        if ingredient_item.name exists
+            ingredient = get_ingredient()
+        else
+            ingredient = create_ingredient()
+        
+        create_quantity(db, recipe.id, ingredient.id, ingredient_item.amount, ingredient_item.unit)
+
+        '''
+        if ingredient_exists_by_name(db, ingredient_item.name):
+            ingredient = get_ingredient_by_name(db, ingredient_item.name)
+        else:
+            ingredient = create_ingredient(db, ingredient_item.name)
+        
+        create_quantity(db, recipe.id, ingredient.id, ingredient_item.amount, ingredient_item.unit)
+    
+    for instruction in instructions_list:
+        step = create_instruction(db, instruction.number, instruction.description)
+        recipe.instructions.append(step)
+
+    for tag_item in tags_list:
+        if tag_exists_by_name(db, tag_item):
+            tag = get_tag(db, tag_item)
+        else:
+            tag = create_tag(db, tag_item)
+        recipe.tags.append(tag)
+    
+    return recipe
 
 @app.get('/recipe', response_model=Recipe)
 def read_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
