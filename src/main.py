@@ -174,7 +174,7 @@ def add_full_recipe(recipe: RecipeCreate, db: Annotated[Session, Depends(get_db)
 
 @app.post('/recipe', response_model=Recipe)
 def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: RecipeCreate, db: Annotated[Session, Depends(get_db)],
-               ingredients_list: list, instructions_list: list, tags_list: list):
+               ingredients_list: list[object], instructions_list: list[object], tags_list: list[object], macros: MacroCreate):
     '''
     Add Recipe to DB
 
@@ -197,17 +197,16 @@ def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: Re
             ingredient = create_ingredient()
         
         create_quantity(db, recipe.id, ingredient.id, ingredient_item.amount, ingredient_item.unit)
-
         '''
-        if ingredient_exists_by_name(db, ingredient_item.name):
-            ingredient = get_ingredient_by_name(db, ingredient_item.name)
+        if ingredient_exists_by_name(db, ingredient_item.get("name")):
+            ingredient = get_ingredient_by_name(db, ingredient_item.get("name"))
         else:
-            ingredient = create_ingredient(db, ingredient_item.name)
+            ingredient = create_ingredient(db, ingredient_item.get("name"))
         
-        create_quantity(db, recipe.id, ingredient.id, ingredient_item.amount, ingredient_item.unit)
+        create_quantity(db, recipe.id, ingredient.id, ingredient_item.get("amount"), ingredient_item.get("unit"))
     
     for instruction in instructions_list:
-        step = create_instruction(db, instruction.number, instruction.description)
+        step = create_instruction(db, instruction.get("number"), instruction.get("description"))
         recipe.instructions.append(step)
 
     for tag_item in tags_list:
@@ -216,7 +215,9 @@ def add_recipe(token_data: Annotated[TokenData, Depends(verify_jwt)], recipe: Re
         else:
             tag = create_tag(db, tag_item)
         recipe.tags.append(tag)
-    
+
+    create_macro(db, macros, recipe.id)
+        
     return recipe
 
 @app.get('/recipe', response_model=Recipe)
