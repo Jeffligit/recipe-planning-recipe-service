@@ -203,3 +203,11 @@ def read_macro_from_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: i
     '''
 
     return get_macro_from_recipe(db, recipe_id)
+
+'''def paginate_query_results(db: Annotated[Session, Depends(get_db)], model, filter, page, per_page):
+    query = db.query(model)
+
+    if filter is not None:
+        query = query.filter(filter)
+    
+    return query.limit(per_page).offset((page - 1) * per_page).all()'''
