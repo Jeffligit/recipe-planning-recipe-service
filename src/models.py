@@ -1,6 +1,6 @@
 from .database import Base
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Table
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Table, DateTime
 from sqlalchemy.orm import relationship
 
 
@@ -13,6 +13,7 @@ class User(Base):
     hashed_password = Column(String)
 
     recipes = relationship("Recipe", back_populates="author")
+    mealplans = relationship("Mealplan", back_populates="author")
 
 
 recipes_tags = Table(
@@ -21,6 +22,7 @@ recipes_tags = Table(
     Column("recipe_id", Integer, ForeignKey("recipes.id")),
     Column("tag_id", Integer, ForeignKey("tags.id"))
     )
+
 
 class Recipe(Base):
     __tablename__ = "recipes"
@@ -32,12 +34,14 @@ class Recipe(Base):
     prep_time = Column(Integer)
     cook_time = Column(Integer)
     rating = Column(Float(2))
+    servings = Column(Integer)
+
     author = relationship("User", back_populates="recipes")
     quantities = relationship("Quantity", back_populates="recipe")
     macros = relationship("Macro", back_populates="recipe", uselist=False)
     instructions = relationship("Instruction", back_populates="recipe")
     tags = relationship("Tag", secondary=recipes_tags, back_populates="recipes")
-
+    mealdates = relationship("Mealdate", back_populates="recipe")
 
 class Ingredient(Base):
     __tablename__= "ingredients"
@@ -76,6 +80,29 @@ class Quantity(Base):
 
     ingredient = relationship("Ingredient", back_populates="quantities")
     recipe = relationship("Recipe", back_populates="quantities")
+
+class Mealplan(Base):
+    __tablename__="mealplans"
+
+    id = Column(Integer, primary_key=True)
+    author_id = Column(Integer, ForeignKey("users.id"))
+    title = Column(String, index=True)
+    createdOn = Column(DateTime)
+    lastUpdated = Column(DateTime)
+
+    author = relationship("User", back_populates="mealplans")
+    mealdates = relationship("Mealdate", back_populates="mealplan")
+
+class Mealdate(Base):
+    __tablename__="mealdates"
+
+    mealplan_id = Column(Integer, ForeignKey("mealplans.id"), primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"), primary_key=True)
+    servings = Column(Integer)
+    date = Column(DateTime)
+
+    mealplan = relationship("Mealplan", back_populates="mealdates")
+    recipe = relationship("Recipe", back_populates="mealdates")
 
 
 class Macro(Base):
