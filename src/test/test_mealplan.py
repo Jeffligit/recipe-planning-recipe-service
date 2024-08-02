@@ -1,5 +1,6 @@
 from src.mealplan.crud import create_mealplan
 from src.mealdate.crud import create_mealdate
+from src.main import add_mealplan
 
 from src.models import Mealplan, Mealdate
 from datetime import datetime

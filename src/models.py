@@ -41,7 +41,7 @@ class Recipe(Base):
     macros = relationship("Macro", back_populates="recipe", uselist=False)
     instructions = relationship("Instruction", back_populates="recipe")
     tags = relationship("Tag", secondary=recipes_tags, back_populates="recipes")
-    mealdates = relationship("Mealdate", back_populates="recipe")
+    mealdates = relationship("Mealdate", back_populates="recipes")
 
 class Ingredient(Base):
     __tablename__= "ingredients"
@@ -102,7 +102,7 @@ class Mealdate(Base):
     date = Column(DateTime)
 
     mealplan = relationship("Mealplan", back_populates="mealdates")
-    recipe = relationship("Recipe", back_populates="mealdates")
+    recipes = relationship("Recipe", back_populates="mealdates")
 
 
 class Macro(Base):

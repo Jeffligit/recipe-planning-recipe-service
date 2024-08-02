@@ -8,11 +8,14 @@ from .user.crud import create_user, get_user_by_username, get_user_by_email, get
 from .recipe.crud import create_recipe, get_recipe
 from .ingredient.crud import create_ingredient
 from .macro.crud import create_macro, get_macro_from_recipe, get_macro
+from .mealplan.crud import create_mealplan
+from .mealdate.crud import create_mealdate
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError 
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -203,3 +206,11 @@ def read_macro_from_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: i
     '''
 
     return get_macro_from_recipe(db, recipe_id)
+
+def add_mealplan(db: Annotated[Session, Depends(get_db)], token_data: Annotated[TokenData, Depends(verify_jwt)], title: str, days: list[object]):
+    mealplan = create_mealplan(db, user_id=1, title=title, createdOn=datetime.now(), lastUpdated=datetime.now())
+
+    for day in days:
+        create_mealdate(db, mealplan.id, day.get("recipe"), day.get("servings"), day.get("date"))
+
+    return mealplan
