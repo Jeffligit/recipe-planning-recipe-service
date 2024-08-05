@@ -1,4 +1,5 @@
-from typing import Annotated
+from typing import Annotated, Optional
+import os
 
 from .auth.user_auth import create_access_token, decode_access_token, verify_password
 from .database import SessionLocal, engine
@@ -9,13 +10,30 @@ from .recipe.crud import create_recipe, get_recipe
 from .ingredient.crud import create_ingredient
 from .macro.crud import create_macro, get_macro_from_recipe, get_macro
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Response, Cookie
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError 
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 
+load_dotenv()
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
+
+origins = [
+    os.getenv("CORS_ORIGIN")
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -72,6 +90,12 @@ def verify_jwt(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
         raise credentials_exception
     
 
+def get_auth_cookie(jwt: Annotated[str | None, Cookie()] = None) -> dict:
+    if jwt is None:
+        raise HTTPException(status_code=403, detail="Token not provided")
+    return verify_jwt(jwt)
+
+
 @app.post('/signup', response_model=User)
 def signup(user: UserCreate, db: Session = Depends(get_db)):
     '''
@@ -94,7 +118,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @app.post('/token')
-def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)) -> Token:
+def login_for_access_token(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)) -> Token:
     '''
     Verifies login credentials from from received in the header. Creates a jwt token from the information provided
 
@@ -112,12 +136,12 @@ def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depen
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token({ "sub": user.email, "user_id": user.id })
-
+    response.set_cookie(key="jwt", value=access_token, httponly=True, secure=True, samesite="none")
     return Token(access_token=access_token, token_type="bearer")
 
     
 @app.get('/user', response_model=User)
-def read_user(token_data: Annotated[TokenData, Depends(verify_jwt)], db: Session = Depends(get_db)):
+def read_user(token_data: Annotated[TokenData, Depends(get_auth_cookie)], db: Session = Depends(get_db)):
     '''
     Retrieves user using information provided in the JWT token
 
@@ -203,3 +227,7 @@ def read_macro_from_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: i
     '''
 
     return get_macro_from_recipe(db, recipe_id)
+
+@app.get('/test_cookie')
+def test_cookie(token_data: Annotated[TokenData, Depends(get_auth_cookie)]):
+    return token_data
