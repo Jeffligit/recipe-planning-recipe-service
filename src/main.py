@@ -9,7 +9,7 @@ from .recipe.crud import create_recipe, get_recipe
 from .ingredient.crud import create_ingredient
 from .macro.crud import create_macro, get_macro_from_recipe, get_macro
 from .mealplan.crud import create_mealplan
-from .mealdate.crud import create_mealdate
+from .meal.crud import create_meal
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -211,6 +211,6 @@ def add_mealplan(db: Annotated[Session, Depends(get_db)], token_data: Annotated[
     mealplan = create_mealplan(db, user_id=1, title=title, createdOn=datetime.now(), lastUpdated=datetime.now())
 
     for day in days:
-        create_mealdate(db, mealplan.id, day.get("recipe"), day.get("servings"), day.get("date"))
+        create_meal(db, mealplan.id, day.get("recipe"), day.get("servings"), day.get("date"))
 
     return mealplan

@@ -1,8 +1,8 @@
 from src.mealplan.crud import create_mealplan
-from src.mealdate.crud import create_mealdate
+from src.meal.crud import create_meal
 from src.main import add_mealplan
 
-from src.models import Mealplan, Mealdate
+from src.models import Mealplan, Meal
 from datetime import datetime
 
 class TestMealplan:
@@ -13,22 +13,22 @@ class TestMealplan:
         mealplan = session.query(Mealplan).filter(Mealplan.id == 1).first()
         assert mealplan.author_id == 1
 
-    def test_create_mealdates(self, session):
-        create_mealdate(session, mealplan_id=1, recipe_id=1, servings=1, date=datetime(2024, 7, 25))
+    def test_create_meals(self, session):
+        create_meal(session, mealplan_id=1, recipe_id=1, servings=1, date=datetime(2024, 7, 25))
 
-        mealdate = session.query(Mealdate).filter(Mealdate.mealplan_id == 1).first()
-        assert mealdate.recipe_id == 1
+        meal = session.query(Meal).filter(Meal.mealplan_id == 1).first()
+        assert meal.recipe_id == 1
 
-    def test_create_multiple_mealdates(self, session):
-        create_mealdate(session, mealplan_id=1, recipe_id=2, servings=1, date=datetime(2024, 7 ,26))
+    def test_create_multiple_meals(self, session):
+        create_meal(session, mealplan_id=1, recipe_id=2, servings=1, date=datetime(2024, 7 ,26))
 
-        mealdate = session.query(Mealdate).filter(Mealdate.recipe_id == 2).first()
-        assert mealdate.mealplan_id == 1
+        meal = session.query(Meal).filter(Meal.recipe_id == 2).first()
+        assert meal.mealplan_id == 1
 
-    def test_get_all_mealdates(self, session):
+    def test_get_all_meals(self, session):
         mealplan = session.query(Mealplan).get(1)
 
         print(mealplan.title)
 
-        for day in mealplan.mealdates:
+        for day in mealplan.meals:
             print(f"{day.date}, {day.recipe_id}, {day.servings}")

@@ -41,7 +41,7 @@ class Recipe(Base):
     macros = relationship("Macro", back_populates="recipe", uselist=False)
     instructions = relationship("Instruction", back_populates="recipe")
     tags = relationship("Tag", secondary=recipes_tags, back_populates="recipes")
-    mealdates = relationship("Mealdate", back_populates="recipes")
+    meals = relationship("Meal", back_populates="recipes")
 
 class Ingredient(Base):
     __tablename__= "ingredients"
@@ -91,18 +91,18 @@ class Mealplan(Base):
     lastUpdated = Column(DateTime)
 
     author = relationship("User", back_populates="mealplans")
-    mealdates = relationship("Mealdate", back_populates="mealplan")
+    meals = relationship("Meal", back_populates="mealplan")
 
-class Mealdate(Base):
-    __tablename__="mealdates"
+class Meal(Base):
+    __tablename__="meals"
 
     mealplan_id = Column(Integer, ForeignKey("mealplans.id"), primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), primary_key=True)
     servings = Column(Integer)
     date = Column(DateTime)
 
-    mealplan = relationship("Mealplan", back_populates="mealdates")
-    recipes = relationship("Recipe", back_populates="mealdates")
+    mealplan = relationship("Mealplan", back_populates="meals")
+    recipes = relationship("Recipe", back_populates="meals")
 
 
 class Macro(Base):
