@@ -17,6 +17,13 @@ class Recipe(RecipeBase):
     class Config:
         orm_mode = True
 
+class MealplanBase(BaseModel):
+    title: str
+
+class Mealplan(MealplanBase):
+    id: int
+    author_id: int
+    meals: str
 
 class UserBase(BaseModel):
     email: str

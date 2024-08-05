@@ -1,6 +1,6 @@
 from .database import Base
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Table, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Table, Date
 from sqlalchemy.orm import relationship
 
 
@@ -87,8 +87,8 @@ class Mealplan(Base):
     id = Column(Integer, primary_key=True)
     author_id = Column(Integer, ForeignKey("users.id"))
     title = Column(String, index=True)
-    createdOn = Column(DateTime)
-    lastUpdated = Column(DateTime)
+    createdOn = Column(Date)
+    lastUpdated = Column(Date)
 
     author = relationship("User", back_populates="mealplans")
     meals = relationship("Meal", back_populates="mealplan")
@@ -99,7 +99,7 @@ class Meal(Base):
     mealplan_id = Column(Integer, ForeignKey("mealplans.id"), primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), primary_key=True)
     servings = Column(Integer)
-    date = Column(DateTime)
+    date = Column(Date)
 
     mealplan = relationship("Mealplan", back_populates="meals")
     recipes = relationship("Recipe", back_populates="meals")
