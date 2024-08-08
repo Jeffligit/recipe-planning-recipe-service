@@ -1,7 +1,7 @@
 from typing import Annotated, Optional
 import os
 
-from .auth.user_auth import create_access_token, decode_access_token, verify_password
+from .auth.user_auth import create_access_token, decode_access_token, verify_password, create_access_cookie
 from .database import SessionLocal, engine
 from .models import Base
 from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token, Ingredient, Macro, MacroCreate, Mealplan
@@ -99,8 +99,8 @@ def get_auth_cookie(jwt: Annotated[str | None, Cookie()] = None) -> dict:
     return verify_jwt(jwt)
 
 
-@app.post('/signup', response_model=User)
-def signup(user: UserCreate, db: Session = Depends(get_db)):
+@app.post('/signup')
+def signup(response: Response, user: UserCreate, db: Session = Depends(get_db)) -> Token:
     '''
     Creates a user in the database
 
@@ -117,8 +117,9 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username is in use")
 
-    return create_user(db, user)
-
+    createdUser = create_user(db, user)
+    return create_access_cookie(response=response, email=createdUser.email, id=createdUser.id)
+    
 
 @app.post('/token')
 def login_for_access_token(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)) -> Token:
@@ -138,10 +139,9 @@ def login_for_access_token(response: Response, form_data: Annotated[OAuth2Passwo
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token({ "sub": user.email, "user_id": user.id })
-    response.set_cookie(key="jwt", value=access_token, httponly=True, secure=True, samesite="none")
-    return Token(access_token=access_token, token_type="bearer")
+    return create_access_cookie(response=response, email=user.email, id=user.id)
 
+    
     
 @app.get('/user', response_model=User)
 def read_user(token_data: Annotated[TokenData, Depends(get_auth_cookie)], db: Session = Depends(get_db)):
