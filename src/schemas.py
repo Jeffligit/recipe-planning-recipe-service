@@ -34,7 +34,6 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    recipes: list[Recipe] = []
 
     class Config:
         orm_mode = True
