@@ -100,7 +100,7 @@ def get_auth_cookie(jwt: Annotated[str | None, Cookie()] = None) -> dict:
 
 
 @app.post('/signup')
-def signup(response: Response, user: UserCreate, db: Session = Depends(get_db)) -> Token:
+def signup(response: Response, user: UserCreate, db: Session = Depends(get_db)) -> int:
     '''
     Creates a user in the database
 
@@ -118,11 +118,12 @@ def signup(response: Response, user: UserCreate, db: Session = Depends(get_db)) 
         raise HTTPException(status_code=400, detail="Username is in use")
 
     createdUser = create_user(db, user)
-    return create_access_cookie(response=response, email=createdUser.email, id=createdUser.id)
+    create_access_cookie(response=response, email=createdUser.email, id=createdUser.id)
+    return createdUser.id
     
 
 @app.post('/token')
-def login_for_access_token(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)) -> Token:
+def login_for_access_token(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)) -> int:
     '''
     Verifies login credentials from from received in the header. Creates a jwt token from the information provided
 
@@ -139,8 +140,8 @@ def login_for_access_token(response: Response, form_data: Annotated[OAuth2Passwo
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return create_access_cookie(response=response, email=user.email, id=user.id)
-
+    create_access_cookie(response=response, email=user.email, id=user.id)
+    return user.id
     
     
 @app.get('/user', response_model=User)
