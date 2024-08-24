@@ -100,7 +100,7 @@ def get_auth_cookie(jwt: Annotated[str | None, Cookie()] = None) -> dict:
 
 
 @app.post('/signup')
-def signup(response: Response, user: UserCreate, db: Session = Depends(get_db)) -> int:
+def signup(response: Response, user: UserCreate, db: Session = Depends(get_db)):
     '''
     Creates a user in the database
 
@@ -119,11 +119,11 @@ def signup(response: Response, user: UserCreate, db: Session = Depends(get_db)) 
 
     createdUser = create_user(db, user)
     create_access_cookie(response=response, email=createdUser.email, id=createdUser.id)
-    return createdUser.id
+    return {"user_id": createdUser.id}
     
 
 @app.post('/token')
-def login_for_access_token(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)) -> int:
+def login_for_access_token(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)):
     '''
     Verifies login credentials from from received in the header. Creates a jwt token from the information provided
 
@@ -141,7 +141,7 @@ def login_for_access_token(response: Response, form_data: Annotated[OAuth2Passwo
             headers={"WWW-Authenticate": "Bearer"},
         )
     create_access_cookie(response=response, email=user.email, id=user.id)
-    return user.id
+    return { "user_id": user.id }
     
     
 @app.get('/user', response_model=User)
@@ -232,9 +232,13 @@ def read_macro_from_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: i
 
     return get_macro_from_recipe(db, recipe_id)
 
-@app.get('/test_cookie')
-def test_cookie(token_data: Annotated[TokenData, Depends(get_auth_cookie)]):
+@app.get('/get_cookie_info')
+def get_cookie_info(token_data: Annotated[TokenData, Depends(get_auth_cookie)]):
+    '''
+    Get information encrypted inside the cookie set for with authed.
+    '''
     return token_data
+
 @app.post('/mealplan', response_model=Mealplan)
 def add_mealplan(db: Annotated[Session, Depends(get_db)], token_data: Annotated[TokenData, Depends(verify_jwt)], title: str, days: list[object]):
     mealplan = create_mealplan(db, user_id=1, title=title, createdOn=date.now(), lastUpdated=date.now())
