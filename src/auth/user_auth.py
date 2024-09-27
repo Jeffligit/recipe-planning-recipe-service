@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 import jwt
 from passlib.context import CryptContext
+from fastapi import Response
+from ..schemas import Token
 
 
 load_dotenv()
@@ -28,3 +30,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = timedelta(
                       
 def decode_access_token(token):
     return jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
+
+def create_access_cookie(response: Response, email: str, id: int):
+    access_token = create_access_token({ "sub": email, "user_id": id })
+    response.set_cookie(key="jwt", value=access_token, httponly=True, secure=True, samesite="none")
+    return Token(access_token=access_token, token_type="bearer")

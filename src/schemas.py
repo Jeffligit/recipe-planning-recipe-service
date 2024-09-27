@@ -5,6 +5,7 @@ class RecipeBase(BaseModel):
     description: str | None = None
     prep_time: int | None = None
     cook_time: int | None = None
+    servings: int | None = 1
 
 class RecipeCreate(RecipeBase):
     pass
@@ -17,6 +18,13 @@ class Recipe(RecipeBase):
     class Config:
         orm_mode = True
 
+class MealplanBase(BaseModel):
+    title: str
+
+class Mealplan(MealplanBase):
+    id: int
+    author_id: int
+    meals: str
 
 class UserBase(BaseModel):
     email: str
@@ -27,7 +35,6 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    recipes: list[Recipe] = []
 
     class Config:
         orm_mode = True
