@@ -5,6 +5,7 @@ class RecipeBase(BaseModel):
     description: str | None = None
     prep_time: int | None = None
     cook_time: int | None = None
+    servings: int | None = 1
 
 class RecipeCreate(RecipeBase):
     pass
