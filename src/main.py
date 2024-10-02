@@ -4,7 +4,7 @@ import os
 from .auth.user_auth import create_access_token, decode_access_token, verify_password, create_access_cookie
 from .database import SessionLocal, engine
 from .models import Base
-from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token, Ingredient, Macro, MacroCreate, Mealplan
+from .schemas import Recipe, RecipeCreate, User, UserCreate, TokenData, Token, Ingredient, Macro, MacroCreate, Mealplan, RecipeResponse
 from .user.crud import create_user, get_user_by_username, get_user_by_email, get_user
 from .recipe.crud import create_recipe, get_recipe
 from .ingredient.crud import create_ingredient, ingredient_exists_by_name, get_ingredient_by_name
@@ -167,6 +167,11 @@ def read_user(token_data: Annotated[TokenData, Depends(get_auth_cookie)], db: Se
         )
     return user
 
+@app.get('/user/from-id', response_model=User)
+def read_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    
+    return get_user(db, user_id)
+
 def add_full_recipe(recipe: RecipeCreate, db: Annotated[Session, Depends(get_db)],
                ingredients_list: list, instructions_list: list, tags_list: list):
     recipe = create_recipe(db=db, recipe=recipe, user_id=1)
@@ -228,10 +233,10 @@ def add_recipe(token_data: Annotated[TokenData, Depends(get_auth_cookie)], recip
         
         create_quantity(db, recipe.id, ingredient.id, ingredient_item.amount, ingredient_item.unit)
         '''
-        if ingredient_exists_by_name(db, ingredient_item.get("name")):
-            ingredient = get_ingredient_by_name(db, ingredient_item.get("name"))
+        if ingredient_exists_by_name(db, ingredient_item.get("ingredient")):
+            ingredient = get_ingredient_by_name(db, ingredient_item.get("ingredient"))
         else:
-            ingredient = create_ingredient(db, ingredient_item.get("name"))
+            ingredient = create_ingredient(db, ingredient_item.get("ingredient"))
         
         create_quantity(db, recipe.id, ingredient.id, ingredient_item.get("amount"), ingredient_item.get("unit"))
     
@@ -250,7 +255,30 @@ def add_recipe(token_data: Annotated[TokenData, Depends(get_auth_cookie)], recip
         
     return recipe
 
-@app.get('/recipe', response_model=Recipe)
+@app.get('/recipe')
+def retrive_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
+    recipe = get_recipe(db, recipe_id)
+
+    ingredient_list = [
+        {
+            "ingredient": quantity.ingredient.name,
+            "amount": quantity.amount,
+            "unit": quantity.unit
+        }
+        for quantity in recipe.quantities
+    ]
+
+    response = {
+        "recipe": recipe,
+        "ingredients": ingredient_list,
+        "macros": recipe.macros,
+        "instructions": recipe.instructions,
+        "tags": recipe.tags,
+        "meals": recipe.meals
+    }
+
+    return response
+
 def read_recipe(db: Annotated[Session, Depends(get_db)], recipe_id: int):
     '''
     Get Recipe from DB by id

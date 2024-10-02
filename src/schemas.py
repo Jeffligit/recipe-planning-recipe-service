@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class RecipeBase(BaseModel):
     title: str
@@ -17,6 +18,8 @@ class Recipe(RecipeBase):
 
     class Config:
         orm_mode = True
+
+
 
 class MealplanBase(BaseModel):
     title: str
@@ -70,3 +73,11 @@ class Macro(MacroBase):
 class Tag(BaseModel):
     id: int
     tag: str
+
+class RecipeResponse(BaseModel):
+    recipe: Recipe
+    quantities: List[object]
+    macros: List[MacroBase]
+    instructions: List[str]
+    tags: List[Tag]
+    meals: List[object]
